@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import ItemAcc from "./components/ItemAcc.vue";
+
+import FormAcc from "./components/FormAcc.vue";
 </script>
 
 <template>
   <div>
-    <item-acc acount=""/>
+    <form-acc/>
   </div>
 </template>
 
