@@ -18,7 +18,6 @@ const localLabelsText = ref(props.account.labels.join('; '))
 const localType = ref(props.account.type);
 const localLogin = ref(props.account.login);
 const localPassword = ref(props.account.password);
-const edit = ref<boolean>(true)
 
 
 
@@ -133,7 +132,6 @@ watch(() => props.account, (newAccount) => {
               @blur="updateLabels"
               placeholder="Введите метки через ;"
               maxlength="50"
-              :readonly="edit"
           />
           <div class="form-text">Метки через точку с запятой (;)</div>
           <div class="invalid-feedback" v-if="errors.labels">
@@ -196,9 +194,6 @@ watch(() => props.account, (newAccount) => {
               @click="$emit('remove')"
           >
             ×
-          </button>
-          <button class="btn btn-primary">
-            Edit
           </button>
 
         </div>
