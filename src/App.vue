@@ -1,6 +1,8 @@
 <script setup lang="ts">
 
 import FormAcc from "./components/FormAcc.vue";
+
+
 </script>
 
 <template>

@@ -1,54 +1,84 @@
 import { defineStore } from 'pinia';
+import { ref, watch } from 'vue';
 
+// Типы оставляем те же
 export interface Account {
-    id: number;
-    labels: string[];
-    type: 'local' | 'ldap';
-    login: string;
-    password: string | null;
+  id: number;
+  labels: string[];
+  type: 'local' | 'ldap';
+  login: string;
+  password: string | null;
 }
 
-interface AccountState {
-    accounts: Account[];
-    nextId: number;
-}
+export const useAccountStore = defineStore('account', () => {
+  // --- STATE (Состояние) ---
+  const accounts = ref<Account[]>([]);
+  const accountType = ref<'local' | 'ldap'>('local');
+  const nextId = ref(1);
 
-export const useAccountStore = defineStore('account', {
-    state: (): AccountState => ({
-        accounts: [],
-        nextId: 1,
-    }),
-    actions: {
-        addAccount(account: Omit<Account, 'id'>) {
-            this.accounts.push({ ...account, id: this.nextId++ });
-            this.saveToLocalStorage();
-        },
-        updateAccount(id: number, updates: Partial<Omit<Account, 'id'>>) {
-            const index = this.accounts.findIndex(acc => acc.id === id);
-            if (index === -1) return;
+  // --- ACTIONS (Действия) ---
+  // Просто меняем данные, о сохранении не думаем — оно автоматическое
+  
+  function addAccount(account: Omit<Account, 'id'>) {
+    accounts.value.push({ 
+      ...account, 
+      id: nextId.value++ 
+    });
+  }
 
-            this.accounts[index] = { ...this.accounts[index], ...updates } as Account;
+  function updateAccount(id: number, updates: Partial<Omit<Account, 'id'>>) {
+    const index = accounts.value.findIndex(acc => acc.id === id);
+    if (index !== -1) {
+      // Это сработает для любого поля: пароль, логин, метки
+      accounts.value[index] = { ...accounts.value[index], ...updates };
+    }
+  }
 
-            this.saveToLocalStorage();
-        },
-        removeAccount(id: number) {
-            this.accounts = this.accounts.filter(acc => acc.id !== id);
-            this.saveToLocalStorage();
-        },
-        saveToLocalStorage() {
-            localStorage.setItem('accounts', JSON.stringify(this.accounts));
-            localStorage.setItem('nextId', this.nextId.toString());
-        },
-        loadFromLocalStorage() {
-            const accounts = localStorage.getItem('accounts');
-            const nextId = localStorage.getItem('nextId');
+  function removeAccount(id: number) {
+    accounts.value = accounts.value.filter(acc => acc.id !== id);
+  }
 
-            if (accounts) {
-                this.accounts = JSON.parse(accounts);
-            }
-            if (nextId) {
-                this.nextId = parseInt(nextId, 10);
-            }
-        },
+  function setAccountType(type: 'local' | 'ldap') {
+    accountType.value = type;
+  }
+
+  // --- PERSISTENCE (Умное сохранение и загрузка) ---
+
+  // 1. Загрузка при инициализации (срабатывает 1 раз при старте)
+  const storedData = localStorage.getItem('my-app-data');
+  if (storedData) {
+    try {
+      const parsed = JSON.parse(storedData);
+      accounts.value = parsed.accounts || [];
+      accountType.value = parsed.accountType || 'local';
+      nextId.value = parsed.nextId || 1;
+    } catch (e) {
+      console.error('Ошибка чтения localStorage', e);
+    }
+  }
+
+  // 2. Автоматическое сохранение (WATCH)
+  // Следит за любыми изменениями в accounts, accountType или nextId
+  watch(
+    [accounts, accountType, nextId], 
+    (state) => {
+      // Сохраняем всё одним куском, чтобы данные были целостными
+      localStorage.setItem('my-app-data', JSON.stringify({
+        accounts: accounts.value,
+        accountType: accountType.value,
+        nextId: nextId.value
+      }));
     },
+    { deep: true } // Важно: deep позволяет следить за изменениями внутри объектов массива
+  );
+
+  return {
+    accounts,
+    accountType,
+    nextId,
+    addAccount,
+    updateAccount,
+    removeAccount,
+    setAccountType
+  };
 });
