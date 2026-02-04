@@ -82,14 +82,10 @@ yarn build
 ```
 src/
 ├── components/           # Vue компоненты
-│   ├── AccountForm.vue  # Форма учетной записи
-│   └── AccountList.vue  # Список учетных записей
+│   ├──FormAcc.vue  # Форма учетной записи
+│   └── ItemAcc.vue  # Список учетных записей
 ├── stores/              # Pinia хранилища
-│   └── accounts.ts     # Хранилище учетных записей
-├── types/              # TypeScript типы
-│   └── account.ts     # Интерфейсы учетных записей
-├── utils/              # Вспомогательные функции
-│   └── validation.ts  # Валидация полей
+│   └── accStore.ts     # Хранилище учетных записей
 ├── App.vue            # Корневой компонент
 └── main.ts           # Точка входа
 ```
